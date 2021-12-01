@@ -1,10 +1,13 @@
 
+INPUT .equ WORK
+SAVED_SEQUENCE .equ WORK+$4
+
 read_next:
 		ldy #0
-		lda [$20], Y
-		inc $20
+		lda [INPUT], Y
+		inc INPUT
 		bne .no_high
-		inc $20+1
+		inc INPUT+1
 .no_high:
 		rts
 
@@ -13,12 +16,12 @@ rewind_word:
 		sta Param0
 rewind_by:
 		sec
-		lda $20
+		lda INPUT
 		sbc Param0
-		sta $20
-		lda $21
+		sta INPUT
+		lda INPUT+1
 		sbc #$0
-		sta $21
+		sta INPUT+1
 		rts
 
 do_pass_a:
@@ -35,27 +38,24 @@ do_pass_a:
 
 		lda MathOut+1
 		bpl .decreased
-		inc $22
+		inc Result
 		bne .decreased
-		inc $23
+		inc Result+1
 .decreased:
 		rts
 		
 day1_solve_a:
 		lda #LOW(day1_input_a)
-		sta $20
+		sta INPUT
 		lda #HIGH(day1_input_a)
-		sta $21
-		lda #0
-		sta $22 ; Result.
-		sta $23
+		sta INPUT+1
 .keep_solving:
 		jsr do_pass_a
 		lda #LOW(day1_input_a_end-2)
-		cmp $20
+		cmp INPUT
 		bne .keep_solving
 		lda #HIGH(day1_input_a_end-2)
-		cmp $21
+		cmp INPUT+1
 		bne .keep_solving
 		rts
 
@@ -92,9 +92,9 @@ do_pass_b:
 		sta Param0
 		jsr rewind_by
 		lda MathOut
-		sta $600
+		sta SAVED_SEQUENCE
 		lda MathOut+1
-		sta $601
+		sta SAVED_SEQUENCE+1
 		jsr add_series
 		;
 		; Rewind to head of this series (to make it the new first series for next pass)
@@ -106,33 +106,30 @@ do_pass_b:
 		sta MathRhs
 		lda MathOut+1
 		sta MathRhs+1
-		lda $600
+		lda SAVED_SEQUENCE
 		sta MathLhs
-		lda $601
+		lda SAVED_SEQUENCE+1
 		sta MathLhs+1
 		jsr math_sub16
 		lda MathOut+1
 		bpl .decreased
-		inc $22
+		inc Result
 		bne .decreased
-		inc $23
+		inc Result+1
 .decreased:
 		rts
 
 day1_solve_b:
 		lda #LOW(day1_input_b)
-		sta $20
+		sta INPUT
 		lda #HIGH(day1_input_b)
-		sta $21
-		lda #0
-		sta $22 ; Result.
-		sta $23
+		sta INPUT+1
 .keep_solving:
 		jsr do_pass_b
 		lda #LOW(day1_input_b_end-6)
-		cmp $20
+		cmp INPUT
 		bne .keep_solving
 		lda #HIGH(day1_input_b_end-6)
-		cmp $21
+		cmp INPUT+1
 		bne .keep_solving
 		rts

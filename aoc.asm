@@ -1,5 +1,5 @@
-BANK_DAY1_INPUT .equ $0
-BANK_MUSIC		.equ $1
+BANK_DAY1   .equ $0
+BANK_MUSIC  .equ $1
 
 TMP .equ $30
 ClobberWord0 .equ $32 ; and $3
@@ -8,6 +8,10 @@ Param0 .equ $36
 MathLhs .equ $40
 MathRhs .equ $44
 MathOut .equ $48
+
+WORK .equ $60
+
+Result .equ $500
 
 PrintPPU .equ $680
 PrintQueue .equ $682
@@ -18,10 +22,13 @@ PrintSaveY .equ $6F2
 PrintScrollDisabled .equ $6F3
 PrintScrollTo .equ $6F4
 PrintScrollAt .equ $6F5
-
-Mirror2000 .equ $6FA
-IntrX .equ $6FB
-IntrY .equ $6FC
+Mirror2000 .equ $6F6
+IntrX .equ $6F7
+IntrY .equ $6F8
+FrameStartLo .equ $6F9
+FrameStartHi .equ $6FA
+; FrameEndLo .equ $6FB
+; FrameEndHi .equ $6FC
 FrameCounterLo .equ $6FD
 FrameCounterHi .equ $6FE
 CurrentBank .equ $6FF
@@ -32,20 +39,7 @@ FONT_MAP_SIZE	.equ 77
 FONT_MAP_START	.equ 21
 MAX_MESSAGE_LEN	.equ 32
 
-macro_wait_flush .macro
-.wait_scroll\@:
-	lda PrintScrollAt
-	cmp PrintScrollTo
-	bne .wait_scroll\@
-	lda #$80
-	ora PrintQueue
-	sta PrintQueue
-.wait\@:
-	lda PrintQueue
-	bmi .wait\@ 
-	.endm
-
-macro_putstr .macro
+macro_putstr_inline .macro
 	jmp .p\@
 .str\@:
 	db \1, 0
@@ -53,6 +47,14 @@ macro_putstr .macro
 	lda #LOW(.str\@)
 	sta TMP
 	lda #HIGH(.str\@)
+	sta TMP+1
+	jsr putstr
+	.endm
+
+macro_putstr .macro
+	lda #LOW(\1)
+	sta TMP
+	lda #HIGH(\1)
 	sta TMP+1
 	jsr putstr
 	.endm
@@ -66,9 +68,10 @@ macro_putstr .macro
 	.inesmir 0
 
 	; ### BANK 1 ###
-	.bank BANK_DAY1_INPUT
+	.bank BANK_DAY1
 	.org $8000
 	include "input.asm"
+	include "day1.asm"
 
 	.bank BANK_MUSIC
 	.org $C000
@@ -237,6 +240,20 @@ _bin_to_hex:
 		adc #'A'
 		rts
 
+wait_flush:
+.wait_scroll:
+		lda PrintScrollAt
+		cmp PrintScrollTo
+		bne .wait_scroll
+		lda #$80
+		ora PrintQueue
+		sta PrintQueue
+.wait:
+		lda PrintQueue
+		bmi .wait
+		rts
+
+
 _puthex:
 		pha
 		lsr A
@@ -289,6 +306,82 @@ _putstr:
 		bne .next ; too long?
 .done:
 		rts
+
+banner_top:
+	db "    ",1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,0
+banner_pre:
+	db "    ",6,0
+day_nr:
+	db "      Day ",0
+banner_post:
+	db "        ",6,0
+banner_bottom:
+	db "    ",4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,5,0
+
+begin_task:
+		lda #0
+		sta Result
+		sta Result+1
+		sta PrintColor
+		stx Param0
+		sty Param0+1
+		macro_putstr banner_top
+		jsr wait_flush
+		macro_putstr banner_pre
+		macro_putstr_inline " Advent of Code 2021 "
+		lda #6
+		jsr _putchar
+		jsr wait_flush
+		macro_putstr banner_pre
+		macro_putstr day_nr
+		lda Param0
+		jsr _putchar
+		lda #'.'
+		jsr _putchar
+		lda Param0+1
+		jsr _putchar
+		macro_putstr banner_post
+		jsr wait_flush
+		macro_putstr banner_bottom
+		jsr wait_flush
+		jsr wait_flush
+		lda #0
+		sta PrintColor
+		macro_putstr_inline "    Starting on frame #"
+		lda #2
+		sta PrintColor
+		lda FrameCounterHi
+		jsr _puthex
+		lda FrameCounterLo
+		jsr _puthex
+		jsr wait_flush
+		lda FrameCounterHi
+		sta FrameStartHi
+		lda FrameCounterLo
+		sta FrameStartLo
+		rts
+
+end_task:
+		lda #0
+		sta PrintColor
+		macro_putstr_inline "    Finished on frame #"
+		inc PrintColor
+		lda FrameCounterHi
+		jsr _puthex
+		lda FrameCounterLo
+		jsr _puthex
+		jsr wait_flush
+		jsr wait_flush
+		dec PrintColor
+		macro_putstr_inline "    Correct answer: "
+		inc PrintColor
+		lda Result+1
+		jsr _puthex
+		lda Result
+		jsr _puthex
+		jsr wait_flush
+		jsr wait_flush
+		jmp wait_flush
 
 puthex:
 		sty PrintSaveY
@@ -455,27 +548,32 @@ reset_vector:
 		;
 		lda #29
 		sta PrintScrollDisabled
-
 		cli
-		ldx #0
-.skip_frame:
-		lda FrameCounterLo
-		and #$7
-		bne .skip_frame
-		macro_putstr "HI NT HI: "
-		txa
-		inx
-		jsr puthex
-		macro_wait_flush
-		;lda #BANK_DAY1_INPUT
-		;jsr set_bank_a
 
-		;jsr day1_solve_a ; 1711
-		;jsr day1_solve_b ; 1743
-		jmp .skip_frame
+		lda #BANK_DAY1
+		jsr set_bank_a
+
+		ldx #5
+.scroll:
+		jsr wait_flush
+		dex
+		bne .scroll
+
+		ldx #'1'
+		ldy #'a'
+		jsr begin_task
+		jsr day1_solve_a
+		jsr end_task
+		ldx #'1'
+		ldy #'b'
+		jsr begin_task
+		jsr day1_solve_b
+		jsr end_task
+
+all_solved:
+		jmp all_solved
 
 	include "math.asm"
-	include "day1.asm"
 
 palette:
 	.db $0f, $20, $2A, $16
