@@ -1,0 +1,6 @@
+aoc.fns
+aoc.nes
+aoc.nes.deb
+fceux/
+nesasm/
+*.py
