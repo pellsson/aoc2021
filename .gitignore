@@ -1,6 +1,12 @@
-aoc.fns
+NESASM3.exe
 aoc.nes
-aoc.nes.deb
+aoc.fns
+aoc-full.*
 fceux/
 nesasm/
 *.py
+nesasmsrc/vs/.vs
+nesasmsrc/vs/nesasm-vs.vcxproj.user
+nesasmsrc/vs/x64
+musicbank.bin*
+*.nsf

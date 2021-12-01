@@ -1,34 +1,42 @@
-ClobberWord0 .equ $2 ; and $3
-IntClobberWord0 .equ $4 ; and $5
-MathLhs .equ $10
-MathRhs .equ $14
-MathOut .equ $18
+BANK_DAY1_INPUT .equ $0
+BANK_MUSIC		.equ $1
 
-FrameCounterLo .equ $7FE
-FrameCounterHi .equ $7FF
+TMP .equ $30
+ClobberWord0 .equ $32 ; and $3
+IntClobberWord0 .equ $34 ; and $5
+Param0 .equ $36
+MathLhs .equ $40
+MathRhs .equ $44
+MathOut .equ $48
 
-PrintQueue .equ $780
-PrintData .equ $781
-PrintLine .equ $7EF
-PrintColor .equ $7F0
-PrintSaveX .equ $7F1
-PrintSaveY .equ $7F2
-IntrX .equ $7F3
-IntrY .equ $7F4
+PrintPPU .equ $680
+PrintQueue .equ $682
+PrintData .equ $683
+PrintColor .equ $6F0
+PrintSaveX .equ $6F1
+PrintSaveY .equ $6F2
+PrintScrollDisabled .equ $6F3
+PrintScrollTo .equ $6F4
+PrintScrollAt .equ $6F5
 
+Mirror2000 .equ $6FA
+IntrX .equ $6FB
+IntrY .equ $6FC
+FrameCounterLo .equ $6FD
+FrameCounterHi .equ $6FE
+CurrentBank .equ $6FF
+
+SCROLL_SPEED    .equ 2
+NUM_X_TILES     .equ 32
 FONT_MAP_SIZE	.equ 77
 FONT_MAP_START	.equ 21
 MAX_MESSAGE_LEN	.equ 32
-	
-	;
-	; INES header
-	;
-	.inesprg 1
-	.ineschr 2
-	.inesmap 0
-	.inesmir 0
 
 macro_wait_flush .macro
+.wait_scroll\@:
+	lda PrintScrollAt
+	cmp PrintScrollTo
+	bne .wait_scroll\@
 	lda #$80
 	ora PrintQueue
 	sta PrintQueue
@@ -43,17 +51,42 @@ macro_putstr .macro
 	db \1, 0
 .p\@:
 	lda #LOW(.str\@)
-	sta $0
+	sta TMP
 	lda #HIGH(.str\@)
-	sta $1
+	sta TMP+1
 	jsr putstr
 	.endm
 
 	;
-	; ### BANK 0 ###
+	; INES header
 	;
-	.bank 0
+	.inesprg 4
+	.ineschr 2
+	.inesmap 1
+	.inesmir 0
+
+	; ### BANK 1 ###
+	.bank BANK_DAY1_INPUT
 	.org $8000
+	include "input.asm"
+
+	.bank BANK_MUSIC
+	.org $C000
+
+	music_base: .equ $8D1C
+	music_init: .equ $A672
+	music_play: .equ $A675
+	incbin "musicbank-8000.bin"
+
+	.bank 2
+	.org $C000
+	db "Bank #2 placeholder"
+
+	;
+	; ### BANK 1 ###
+	;
+	.bank 3
+	.org $C000
 
 nmi_vector:
 	pha
@@ -63,64 +96,132 @@ nmi_vector:
 		bne .no_hi
 		inc FrameCounterHi
 .no_hi:
+		; sprites
+		lda #$4
+		sta $4014
+		; prints
 		lda PrintQueue
-		bpl .exit
+		bpl .scroll_screen
 		jsr fflush
-.exit:
+.scroll_screen:
+		lda PrintScrollAt
+		cmp PrintScrollTo
+		beq .do_scroll
+		;
+		; Figure out how far to scroll 
+		;
+		jsr update_scroll
+.do_scroll:
+		;
+		lda #00
+		sta $2005
+		lda PrintScrollAt
+		sta $2005
+		lda Mirror2000
+		sta $2000
+		lda #BANK_MUSIC
+		jsr set_bank_tmp
+		jsr music_play
+		jsr set_bank_current
+		;
+		; Return
+		;
 		ldy IntrY
 		ldx IntrX
 	pla
 		rti
 
-line_to_off:
-	dw 0x020, 0x040, 0x060, 0x080, 0x0A0, 0x0C0, 0x0E0
-	dw 0x100, 0x120, 0x140, 0x160, 0x180, 0x1A0, 0x1C0, 0x1E0
-	dw 0x200, 0x220, 0x240, 0x260, 0x280, 0x2A0, 0x2C0, 0x2E0
-	dw 0x300, 0x320, 0x340, 0x360, 0x380, 0x3A0
+flip_nt:
+		lda Mirror2000
+		eor #$2
+		sta Mirror2000
+		rts
 
+update_scroll:
+		sec
+		lda PrintScrollTo
+		sbc PrintScrollAt
+		cmp #SCROLL_SPEED
+		bpl .update_scroll
+		lda PrintScrollTo
+		sta PrintScrollAt
+		jmp .check_reset
+.update_scroll:
+		clc
+		lda #SCROLL_SPEED
+		adc PrintScrollAt
+		sta PrintScrollAt
+.check_reset:
+		cmp #30*8
+		bcc .done
+		jsr flip_nt
+		lda #0
+		sta PrintScrollAt
+		sta PrintScrollTo
+.done
+		rts
 
 fflush:
-		lda #$20
-		sta IntClobberWord0
-		ldx #$88 ; assume low nt
-		lda PrintLine
-		cmp #30
-		bmi .low_nt
-		ldx #$8B
-		lda #$28
-		sta IntClobberWord0
-.low_nt:
-		stx $2000
-		ldy $2002
-		cmp #60
-		bmi .no_overflow
-.no_overflow:
-		inc PrintLine
-		asl a
-		tax
-		lda line_to_off+1, x
-		adc IntClobberWord0
+		lda $2002
+		lda PrintPPU+1
 		sta $2006
-		lda line_to_off, x
+		lda PrintPPU
 		sta $2006
-		; Loop count
-		lda PrintQueue
-		and #$7F
-		tay	
 		ldx #0
+		stx PrintQueue
 .more:
 		lda PrintData, x
 		sta $2007
+		lda #0
+		sta PrintData, x
 		inx
-		dey
+		cpx #NUM_X_TILES
 		bne .more
-		sty PrintQueue
-		lda $2002
-		sty $2005
-		sty $2005
+		clc
+		lda PrintPPU
+		adc #NUM_X_TILES
+		sta PrintPPU
+		bcc .no_carry
+		inc PrintPPU+1
+.no_carry:
+		; Finally fix PPU address in case it needs to reset
+		lda PrintPPU
+		cmp #$C0 ; If we are at either 0x23C0 or 0x2BC0 we need to reset
+		bne .gogo
+		lda PrintPPU+1
+		cmp #$23
+		bne .check_high_nt
+		; We are in low NT attr, skip ahead
+		lda #$00
+		sta PrintPPU
+		lda #$28
+		sta PrintPPU+1
+		jmp .gogo
+.check_high_nt:
+		cmp #$2B
+		bne .gogo
+		lda #$00
+		sta PrintPPU
+		lda #$20
+		sta PrintPPU+1
+.gogo:
+		lda PrintScrollDisabled
+		bne .dont_scroll
+		clc
+		lda #8
+		adc PrintScrollTo
+		sta PrintScrollTo
+		rts
+.dont_scroll:
+		dec PrintScrollDisabled
 		rts
 
 irq_vector:
+		nop
+		nop
+		nop
+		nop
+		nop
 		rti
 
 _bin_to_hex:
@@ -179,7 +280,7 @@ _putchar:
 _putstr:
 		ldy #00
 .next
-		lda [$0], Y
+		lda [TMP], Y
 		beq .done
 		sty ClobberWord0
 		jsr _putchar
@@ -213,6 +314,22 @@ putstr:
 		ldy PrintSaveY
 		rts
 
+set_bank_a:
+		sta CurrentBank
+set_bank_current:
+		lda CurrentBank
+set_bank_tmp:
+		sta $E000
+		lsr a
+		sta $E000
+		lsr a
+		sta $E000
+		lsr a
+		sta $E000
+		lsr a
+		sta $E000
+		rts
+
 reset_vector:
 		; 
 		; Setup stack
@@ -224,10 +341,25 @@ reset_vector:
 		; Disable PPU & interrupts
 		;
 		inx
+		stx Mirror2000
 		stx $2000
 		stx $2001
 		lda #$40
 		sta $4017
+		;
+		; Init MMC1
+		; Switch 0x8000, Fix 0xC000, Horizontal mirroring
+		;
+		lda #$0F
+		sta $8000
+		lsr a
+		sta $8000
+		lsr a
+		sta $8000
+		lsr a
+		sta $8000
+		lsr a
+		sta $8000
 		;
 		; Sync PPU
 		;
@@ -242,12 +374,13 @@ reset_vector:
 		;
 .memset:
 		lda #$FE ; Sprite outside of screen
-		sta $200, x
+		sta $400, x
 		lda #$00
 		sta $000, x
 		sta $100, x
+		sta $200, x
 		sta $300, x
-		sta $400, x
+		; sta $400, x
 		sta $500, x
 		sta $600, x
 		sta $700, x
@@ -285,6 +418,20 @@ reset_vector:
 		cpx #$20
 		bne .loadpal
 
+		lda #$00
+		sta PrintPPU
+		lda #$20
+		sta PrintPPU+1
+		;
+		; Init music
+		;
+		lda #BANK_MUSIC
+		jsr set_bank_a
+		lda #0
+		ldx #0
+		jsr music_init
+		lda #$40
+		sta $4017
 		;
 		; Init PPU registers
 		;
@@ -300,12 +447,32 @@ reset_vector:
 		; Enable NMI
 		;
 		lda #$88
+		sta Mirror2000
 		sta $2000
 
+		;
+		; Initialize game data
+		;
+		lda #29
+		sta PrintScrollDisabled
+
 		cli
-		jsr day1_solve
-.done:
-		jmp .done
+		ldx #0
+.skip_frame:
+		lda FrameCounterLo
+		and #$7
+		bne .skip_frame
+		macro_putstr "HI NT HI: "
+		txa
+		inx
+		jsr puthex
+		macro_wait_flush
+		;lda #BANK_DAY1_INPUT
+		;jsr set_bank_a
+
+		;jsr day1_solve_a ; 1711
+		;jsr day1_solve_b ; 1743
+		jmp .skip_frame
 
 	include "math.asm"
 	include "day1.asm"
@@ -323,20 +490,8 @@ palette:
 fontmap:
 	incbin "biosfnt.map"
 
-	;
-	; ### BANK 1 ###
-	;
-	.bank 1
 	.org $FFFA
 
 	.dw nmi_vector
 	.dw reset_vector
 	.dw irq_vector
-
-	;
-	; ### BANK 2 ###
-	;
-	.bank 2
-	.org $0000
-	.incbin "biosfnt.chr"
-	.incbin "biosfnt.chr"
