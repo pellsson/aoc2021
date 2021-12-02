@@ -5,13 +5,17 @@ TMP .equ $30
 ClobberWord0 .equ $32 ; and $3
 IntClobberWord0 .equ $34 ; and $5
 Param0 .equ $36
+
+TaskResetStart .equ $40
 MathLhs .equ $40
-MathRhs .equ $44
-MathOut .equ $48
-
+MathRhs .equ $48
+MathOut .equ $50
+Result .equ $58  ; Hack.
 WORK .equ $60
+TaskResetEnd .equ $F0
 
-Result .equ $500
+TaskIter .equ $600
+TaskPtr .equ $601
 
 PrintPPU .equ $680
 PrintQueue .equ $682
@@ -59,6 +63,17 @@ macro_putstr .macro
 	jsr putstr
 	.endm
 
+tmm32 .macro
+	lda \2
+	sta \1
+	lda \2+1
+	sta \1+1
+	lda \2+2
+	sta \1+2
+	lda \2+3
+	sta \1+3
+	.endm
+
 	;
 	; INES header
 	;
@@ -70,8 +85,10 @@ macro_putstr .macro
 	; ### BANK 1 ###
 	.bank BANK_DAY1
 	.org $8000
-	include "input.asm"
 	include "day1.asm"
+	include "day1_input.asm"
+	include "day2.asm"
+	include "day2_input.asm"
 
 	.bank BANK_MUSIC
 	.org $C000
@@ -319,12 +336,15 @@ banner_bottom:
 	db "    ",4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,5,0
 
 begin_task:
-		lda #0
-		sta Result
-		sta Result+1
-		sta PrintColor
 		stx Param0
 		sty Param0+1
+		ldx #(TaskResetEnd-TaskResetStart)
+		lda #0
+.more_reset:
+		sta TaskResetStart-1, X
+		dex
+		bne .more_reset
+		sta PrintColor
 		macro_putstr banner_top
 		jsr wait_flush
 		macro_putstr banner_pre
@@ -375,6 +395,10 @@ end_task:
 		dec PrintColor
 		macro_putstr_inline "    Correct answer: "
 		inc PrintColor
+		lda Result+3
+		jsr _puthex
+		lda Result+2
+		jsr _puthex
 		lda Result+1
 		jsr _puthex
 		lda Result
@@ -559,19 +583,47 @@ reset_vector:
 		dex
 		bne .scroll
 
-		ldx #'1'
-		ldy #'a'
+		lda #0
+		sta TaskIter
+fisk:
+.run_task:
+		lda TaskIter
+		asl a
+		asl a
+		tax
+		lda day_table+2, x
+		sta TaskPtr
+		lda day_table+3, x
+		sta TaskPtr+1 ; Func ptr
+		lda day_table+1, x
+		tay
+		lda day_table, x 
+		tax
 		jsr begin_task
-		jsr day1_solve_a
+		lda #HIGH((.return_to-1))
+		pha
+		lda #LOW((.return_to-1))
+		pha
+		jmp [TaskPtr]
+.return_to:
 		jsr end_task
-		ldx #'1'
-		ldy #'b'
-		jsr begin_task
-		jsr day1_solve_b
-		jsr end_task
-
-all_solved:
+		ldx TaskIter
+		inx
+		stx TaskIter
+		cpx #4
+		bne .run_task
+all_solved
 		jmp all_solved
+
+day_table:
+	db '1', 'a'
+	dw day1_solve_a
+	db '1', 'b'
+	dw day1_solve_b
+	db '2', 'a'
+	dw day2_solve_a
+	db '2', 'b'
+	dw day2_solve_b
 
 	include "math.asm"
 
