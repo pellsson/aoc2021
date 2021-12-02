@@ -1,5 +1,16 @@
+	;
+	; INES header
+	;
+	.inesprg 4
+	.ineschr 4
+	.inesmap 1
+	.inesmir 0
+
 BANK_DAY1   .equ $0
 BANK_MUSIC  .equ $1
+
+CHR_AOC   .equ $0
+CHR_INTRO .equ $2
 
 TMP .equ $30
 ClobberWord0 .equ $32 ; and $3
@@ -16,6 +27,8 @@ TaskResetEnd .equ $F0
 
 TaskIter .equ $600
 TaskPtr .equ $601
+; ...
+TaskWait .equ $604
 
 PrintPPU .equ $680
 PrintQueue .equ $682
@@ -74,14 +87,6 @@ tmm32 .macro
 	sta \1+3
 	.endm
 
-	;
-	; INES header
-	;
-	.inesprg 4
-	.ineschr 2
-	.inesmap 1
-	.inesmir 0
-
 	; ### BANK 1 ###
 	.bank BANK_DAY1
 	.org $8000
@@ -116,6 +121,7 @@ nmi_vector:
 		bne .no_hi
 		inc FrameCounterHi
 .no_hi:
+		dec TaskWait
 		; sprites
 		lda #$4
 		sta $4014
@@ -234,6 +240,79 @@ fflush:
 		rts
 .dont_scroll:
 		dec PrintScrollDisabled
+		rts
+
+ppu_on:
+		;
+		; Init PPU registers
+		;
+		; Enable everything (except gray scale)
+		;
+		lda #$1E
+		sta $2001
+		;
+		; Base NT $2000
+		; BG in 0x0000
+		; Sprite 0x1000
+		; PPU inc 1b
+		; Enable NMI
+		;
+		lda #$88
+		sta Mirror2000
+		sta $2000
+		rts
+
+ppu_off:
+		lda #0
+		sta $2001
+		sta Mirror2000
+		sta $2000
+		rts
+
+load_intro:
+		lda #CHR_INTRO
+		jsr set_chr_bank
+		lda $2002
+		ldx #$3F
+		stx $2006
+		ldx #$00
+		stx $2006
+.loadpal:
+		lda intro_palette, X
+		sta $2007 ; bkgr
+		inx
+		cpx #$20
+		bne .loadpal
+		;
+		; Load NT & Attr
+		;
+		lda $2002
+		lda #$20
+		sta $2006
+		lda #$00
+		sta $2006
+
+		ldx #0
+.more_0
+		lda intro_nt_0, x
+		sta $2007
+		inx
+		bne .more_0
+.more_1
+		lda intro_nt_1, x
+		sta $2007
+		inx
+		bne .more_1
+.more_2
+		lda intro_nt_2, x
+		sta $2007
+		inx
+		bne .more_2
+.more_3
+		lda intro_nt_3, x
+		sta $2007
+		inx
+		bne .more_3
 		rts
 
 irq_vector:
@@ -405,7 +484,13 @@ end_task:
 		jsr _puthex
 		jsr wait_flush
 		jsr wait_flush
-		jmp wait_flush
+		jsr wait_flush
+		lda #$60
+		sta TaskWait
+.wait_next:
+		lda TaskWait
+		bne .wait_next
+		rts
 
 puthex:
 		sty PrintSaveY
@@ -445,6 +530,18 @@ set_bank_tmp:
 		sta $E000
 		lsr a
 		sta $E000
+		rts
+
+set_chr_bank: ; Use $C000 if we decide to splite to 4/4 instead of 8
+		sta $A000
+		lsr a
+		sta $A000
+		lsr a
+		sta $A000
+		lsr a
+		sta $A000
+		lsr a
+		sta $A000
 		rts
 
 reset_vector:
@@ -503,23 +600,51 @@ reset_vector:
 		sta $700, x
 		inx
 		bne .memset
+
+		jsr load_intro
+		;
+		; Init music
+		;
+		lda #BANK_MUSIC
+		jsr set_bank_a
+		lda #0
+		ldx #0
+		jsr music_init
+		lda #$40
+		sta $4017
+
+		jsr ppu_on
+
+.wait_intro_hi:
+		lda FrameCounterHi
+		beq .wait_intro_hi
+.wait_intro_lo:
+		lda FrameCounterLo
+		cmp #$80
+		bne .wait_intro_lo
+
+		jsr ppu_off
 		;
 		; Clear NT & Attr
 		;
 		lda $2002
 		lda #$20
 		sta $2006
-		stx $2006
+		lda #$00
+		sta $2006
 
-		stx $00
+		sta TMP
 		lda #$10
-		sta $01
+		sta TMP+1
+		lda #0
 .memset_nt:
-		stx $2007
-		dec $00
+		sta $2007
+		dec TMP
 		bne .memset_nt
-		dec $01
+		dec TMP+1
 		bne .memset_nt
+
+		lda $2002
 		;
 		; Copy the one palette we use ;)
 		;
@@ -527,7 +652,6 @@ reset_vector:
 		stx $2006
 		ldx #$00
 		stx $2006
-
 .loadpal:
 		lda palette, X
 		sta $2007
@@ -539,33 +663,11 @@ reset_vector:
 		sta PrintPPU
 		lda #$20
 		sta PrintPPU+1
-		;
-		; Init music
-		;
-		lda #BANK_MUSIC
-		jsr set_bank_a
-		lda #0
-		ldx #0
-		jsr music_init
-		lda #$40
-		sta $4017
-		;
-		; Init PPU registers
-		;
-		; Enable everything (except gray scale)
-		;
-		lda #$1E
-		sta $2001
-		;
-		; Base NT $2000
-		; BG in 0x0000
-		; Sprite 0x1000
-		; PPU inc 1b
-		; Enable NMI
-		;
-		lda #$88
-		sta Mirror2000
-		sta $2000
+
+		lda #CHR_AOC
+		jsr set_chr_bank
+
+		jsr ppu_on
 
 		;
 		; Initialize game data
@@ -585,7 +687,6 @@ reset_vector:
 
 		lda #0
 		sta TaskIter
-fisk:
 .run_task:
 		lda TaskIter
 		asl a
@@ -626,6 +727,20 @@ day_table:
 	dw day2_solve_b
 
 	include "math.asm"
+
+intro_nt_0:
+	incbin "nss/intro-0.nam"
+intro_nt_1:
+	incbin "nss/intro-1.nam"
+intro_nt_2:
+	incbin "nss/intro-2.nam"
+intro_nt_3:
+	incbin "nss/intro-3.nam"
+
+intro_palette:
+	incbin "nss/intro.pal" ; bkgr
+	incbin "nss/intro.pal" ; sprite
+
 
 palette:
 	.db $0f, $20, $2A, $16
