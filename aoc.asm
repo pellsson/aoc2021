@@ -96,7 +96,7 @@ tmm32 .macro
 	include "day2_input.asm"
 
 	.bank BANK_MUSIC
-	.org $C000
+	.org $8000
 
 	music_base: .equ $8D1C
 	music_init: .equ $A672
@@ -104,7 +104,7 @@ tmm32 .macro
 	incbin "musicbank-8000.bin"
 
 	.bank 2
-	.org $C000
+	.org $8000
 	db "Bank #2 placeholder"
 
 	;
@@ -243,6 +243,9 @@ fflush:
 		rts
 
 ppu_on:
+.wait_vbl0:
+		lda $2002
+		bpl .wait_vbl0
 		;
 		; Init PPU registers
 		;
@@ -260,16 +263,21 @@ ppu_on:
 		lda #$88
 		sta Mirror2000
 		sta $2000
+		cli
 		rts
 
 ppu_off:
-		lda #0
-		sta $2001
+		sei
 		sta Mirror2000
 		sta $2000
+.wait_vbl0:
+		lda $2002
+		bpl .wait_vbl0
+		lda #0
+		sta $2001
 		rts
 
-load_intro:
+run_intro:
 		lda #CHR_INTRO
 		jsr set_chr_bank
 		lda $2002
@@ -313,7 +321,15 @@ load_intro:
 		sta $2007
 		inx
 		bne .more_3
-		rts
+		jsr ppu_on
+.wait_intro_hi:
+		lda FrameCounterHi
+		beq .wait_intro_hi
+.wait_intro_lo:
+		lda FrameCounterLo
+		cmp #$80
+		bne .wait_intro_lo
+		jmp ppu_off
 
 irq_vector:
 		nop
@@ -552,6 +568,15 @@ reset_vector:
 		ldx #$ff
 		txs
 		;
+		; Sync PPU
+		;
+.wait_vbl0:
+		lda $2002
+		bpl .wait_vbl0
+.wait_vbl1:
+		lda $2002
+		bpl .wait_vbl1
+		;
 		; Disable PPU & interrupts
 		;
 		inx
@@ -575,15 +600,6 @@ reset_vector:
 		lsr a
 		sta $8000
 		;
-		; Sync PPU
-		;
-.wait_vbl0:
-		lda $2002
-		bpl .wait_vbl0
-.wait_vbl1:
-		lda $2002
-		bpl .wait_vbl1
-		;
 		; Memset
 		;
 .memset:
@@ -600,8 +616,6 @@ reset_vector:
 		sta $700, x
 		inx
 		bne .memset
-
-		jsr load_intro
 		;
 		; Init music
 		;
@@ -613,17 +627,7 @@ reset_vector:
 		lda #$40
 		sta $4017
 
-		jsr ppu_on
-
-.wait_intro_hi:
-		lda FrameCounterHi
-		beq .wait_intro_hi
-.wait_intro_lo:
-		lda FrameCounterLo
-		cmp #$80
-		bne .wait_intro_lo
-
-		jsr ppu_off
+		jsr run_intro
 		;
 		; Clear NT & Attr
 		;
@@ -674,7 +678,6 @@ reset_vector:
 		;
 		lda #29
 		sta PrintScrollDisabled
-		cli
 
 		lda #BANK_DAY1
 		jsr set_bank_a
