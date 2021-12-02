@@ -393,7 +393,7 @@ end_task:
 		jsr wait_flush
 		jsr wait_flush
 		dec PrintColor
-		macro_putstr_inline "    Correct answer: "
+		macro_putstr_inline "       NES says: "
 		inc PrintColor
 		lda Result+3
 		jsr _puthex
