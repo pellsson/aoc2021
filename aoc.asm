@@ -2,7 +2,7 @@
 	; INES header
 	;
 	.inesprg 4
-	.ineschr 4
+	.ineschr 2
 	.inesmap 1
 	.inesmir 0
 
