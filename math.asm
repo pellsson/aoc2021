@@ -1,4 +1,3 @@
-
 math_sub16:
 	sec
 	lda MathLhs

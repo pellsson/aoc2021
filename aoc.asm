@@ -17,6 +17,10 @@ ClobberWord0 .equ $32 ; and $3
 IntClobberWord0 .equ $34 ; and $5
 Param0 .equ $36
 
+Src .equ $38
+SrcEnd .equ $3A
+Dst .equ $3C
+
 TaskResetStart .equ $40
 MathLhs .equ $40
 MathRhs .equ $48
@@ -56,36 +60,7 @@ FONT_MAP_SIZE	.equ 77
 FONT_MAP_START	.equ 21
 MAX_MESSAGE_LEN	.equ 32
 
-macro_putstr_inline .macro
-	jmp .p\@
-.str\@:
-	db \1, 0
-.p\@:
-	lda #LOW(.str\@)
-	sta TMP
-	lda #HIGH(.str\@)
-	sta TMP+1
-	jsr putstr
-	.endm
-
-macro_putstr .macro
-	lda #LOW(\1)
-	sta TMP
-	lda #HIGH(\1)
-	sta TMP+1
-	jsr putstr
-	.endm
-
-tmm32 .macro
-	lda \2
-	sta \1
-	lda \2+1
-	sta \1+1
-	lda \2+2
-	sta \1+2
-	lda \2+3
-	sta \1+3
-	.endm
+	include "macros.asm"
 
 	; ### BANK 1 ###
 	.bank BANK_DAY1
@@ -94,6 +69,8 @@ tmm32 .macro
 	include "day1_input.asm"
 	include "day2.asm"
 	include "day2_input.asm"
+	include "day3.asm"
+	include "day3_input.asm"
 
 	.bank BANK_MUSIC
 	.org $8000
@@ -623,11 +600,11 @@ reset_vector:
 		jsr set_bank_a
 		lda #0
 		ldx #0
-		jsr music_init
+		; jsr music_init
 		lda #$40
 		sta $4017
 
-		jsr run_intro
+		; jsr run_intro
 		;
 		; Clear NT & Attr
 		;
@@ -714,20 +691,49 @@ reset_vector:
 		ldx TaskIter
 		inx
 		stx TaskIter
-		cpx #4
+		cpx #((day_table_end - day_table)/4)
 		bne .run_task
 all_solved
 		jmp all_solved
 
+_memcpy:
+		ldy #0
+.check_next:
+		lda Src
+		cmp SrcEnd
+		bne .not_end
+		lda Src+1
+		cmp SrcEnd+1
+		beq .end
+.not_end:
+		lda [Src], Y
+		sta [Dst], Y
+		inc Src
+		bne .no_high_src
+		inc Src+1
+.no_high_src:
+		inc Dst
+		bne .no_high_dst
+		inc Dst+1
+.no_high_dst:
+		jmp .check_next
+.end:
+		rts
+
 day_table:
-	db '1', 'a'
-	dw day1_solve_a
-	db '1', 'b'
-	dw day1_solve_b
-	db '2', 'a'
-	dw day2_solve_a
-	db '2', 'b'
-	dw day2_solve_b
+	;db '1', 'a'
+	;dw day1_solve_a
+	;db '1', 'b'
+	;dw day1_solve_b
+	;db '2', 'a'
+	;dw day2_solve_a
+	;db '2', 'b'
+	;dw day2_solve_b
+	db '3', 'a'
+	dw day3_solve_a
+	db '3', 'b'
+	dw day3_solve_b
+day_table_end
 
 	include "math.asm"
 
