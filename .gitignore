@@ -4,7 +4,6 @@ aoc.fns
 aoc-full.*
 fceux/
 nesasm/
-*.py
 nesasmsrc/vs/.vs
 nesasmsrc/vs/nesasm-vs.vcxproj.user
 nesasmsrc/vs/x64
