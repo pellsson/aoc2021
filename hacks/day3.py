@@ -33,7 +33,6 @@ def day3_b():
 		elif m < 0:
 			v = 0<<i
 		else:
-			
 			v = 1<<i
 		most = [ it for it in most if v == (it&(1<<i)) ]
 		m = count_pos(least, 1 << i)

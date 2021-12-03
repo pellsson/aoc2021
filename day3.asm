@@ -112,5 +112,7 @@ day3_solve_a:
 		rts
 
 day3_solve_b:
+		macro_memcpy day3_input, day3_input_end, $6000 ; Array to RAM
+		
 		rts
 
