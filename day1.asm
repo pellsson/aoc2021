@@ -45,16 +45,16 @@ do_pass_a:
 		rts
 		
 day1_solve_a:
-		lda #LOW(day1_input_a)
+		lda #LOW(day1_input)
 		sta INPUT
-		lda #HIGH(day1_input_a)
+		lda #HIGH(day1_input)
 		sta INPUT+1
 .keep_solving:
 		jsr do_pass_a
-		lda #LOW(day1_input_a_end-2)
+		lda #LOW(day1_input_end-2)
 		cmp INPUT
 		bne .keep_solving
-		lda #HIGH(day1_input_a_end-2)
+		lda #HIGH(day1_input_end-2)
 		cmp INPUT+1
 		bne .keep_solving
 		rts
@@ -120,16 +120,16 @@ do_pass_b:
 		rts
 
 day1_solve_b:
-		lda #LOW(day1_input_b)
+		lda #LOW(day1_input)
 		sta INPUT
-		lda #HIGH(day1_input_b)
+		lda #HIGH(day1_input)
 		sta INPUT+1
 .keep_solving:
 		jsr do_pass_b
-		lda #LOW(day1_input_b_end-6)
+		lda #LOW(day1_input_end-6)
 		cmp INPUT
 		bne .keep_solving
-		lda #HIGH(day1_input_b_end-6)
+		lda #HIGH(day1_input_end-6)
 		cmp INPUT+1
 		bne .keep_solving
 		rts

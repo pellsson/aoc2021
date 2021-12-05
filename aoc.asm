@@ -600,7 +600,7 @@ reset_vector:
 		jsr set_bank_a
 		lda #0
 		ldx #0
-		; jsr music_init
+		;jsr music_init
 		lda #$40
 		sta $4017
 
@@ -721,19 +721,23 @@ _memcpy:
 		rts
 
 day_table:
-	;db '1', 'a'
-	;dw day1_solve_a
-	;db '1', 'b'
-	;dw day1_solve_b
-	;db '2', 'a'
-	;dw day2_solve_a
-	;db '2', 'b'
-	;dw day2_solve_b
+	db '1', 'a'
+	dw day1_solve_a
+	db '1', 'b'
+	dw day1_solve_b
+	db '2', 'a'
+	dw day2_solve_a
+	db '2', 'b'
+	dw day2_solve_b
 	db '3', 'a'
 	dw day3_solve_a
 	db '3', 'b'
 	dw day3_solve_b
 day_table_end
+
+mathout_to_res:
+		tmm32 Result, MathOut
+		rts
 
 	include "math.asm"
 

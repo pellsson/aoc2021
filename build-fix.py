@@ -1,0 +1,5 @@
+x  = open('aoc.nes', 'rb').read()
+x += open('biosfnt.chr', 'rb').read()
+x += open('biosfnt.chr', 'rb').read()
+x += open('nss/intro.chr', 'rb').read()
+open('aoc-full.nes', 'wb').write(x)

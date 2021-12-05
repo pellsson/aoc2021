@@ -29,12 +29,14 @@ def day3_b():
 	while i >= 0:
 		m = count_pos(most, 1 << i)
 		if 0 == m:
+			print('EQUAL')
 			v = 1<<i
 		elif m < 0:
 			v = 0<<i
 		else:
 			v = 1<<i
 		most = [ it for it in most if v == (it&(1<<i)) ]
+		print('Pass: %d (%x) - m was: %d (First %04X, last %04X)' % (len(most), len(most), m, most[0], most[-1]))
 		m = count_pos(least, 1 << i)
 		if 0 == m:
 			v = 0<<i
@@ -46,18 +48,18 @@ def day3_b():
 		i -= 1
 		if len(most) == 1:
 			M = most[0]
-			print('M:', M)
+			print('M: %d, 0x%04x' % (M, M))
 			most = []
 		if len(least) == 1:
 			L = least[0]
-			print('L:', L)
+			print('L: %d, 0x%04x' % (L, L))
 			least = []
 	# L: 3982
 	# M: 1991
 	# 7928162
 	print(M*L)
 
-day3_a()
+day3_b()
 '''
 day3_b()
 out = []
