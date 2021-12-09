@@ -6,11 +6,11 @@
 	.inesmap 1
 	.inesmir 0
 
-; QUICK_RUN .equ 1
+QUICK_RUN .equ 1
 
 BANK_DAY1   .equ $0
 BANK_MUSIC  .equ $1
-BANK_DAY6   .equ $2
+BANK_DAY5   .equ $2
 
 CHR_AOC   .equ $0
 CHR_INTRO .equ $2
@@ -31,7 +31,6 @@ MathOut .equ $50
 Result .equ $58  ; Hack.
 WORK .equ $60
 TaskResetEnd .equ $F0
-
 TaskIter .equ $600
 TaskPtr .equ $601
 ; ...
@@ -71,7 +70,7 @@ MAX_MESSAGE_LEN	.equ 32
 	; ### BANK 1 ###
 	.bank BANK_DAY1
 	.org $8000
-	db "Bank Day 1-5",0
+	db "Bank Day 1-4",0
 	include "day1.asm"
 	include "day1_input.asm"
 	include "day2.asm"
@@ -80,7 +79,6 @@ MAX_MESSAGE_LEN	.equ 32
 	include "day3_input.asm"
 	include "day4.asm"
 	include "day4_input.asm"
-	; include "day5.asm"
 
 	.bank BANK_MUSIC
 	.org $8000
@@ -90,9 +88,11 @@ MAX_MESSAGE_LEN	.equ 32
 	music_play: .equ $A675
 	incbin "musicbank-8000.bin"
 
-	.bank BANK_DAY6
+	.bank BANK_DAY5
 	.org $8000
-	db "Bank Day 6-9"
+	db "Bank Day 5-9"
+	include "day5.asm"
+	include "day5_input.asm"
 	include "day9.asm"
 	include "day9_input.asm"
 	;
@@ -762,26 +762,28 @@ day_table:
 	db '4', 'b', BANK_DAY1
 	dw day4_solve_b
 	ENDIF
-	db '5', 'a', BANK_DAY1
+	db '5', 'a', BANK_DAY5
 	dw day5_solve_a
-	db '5', 'b', BANK_DAY1
+	db '5', 'b', BANK_DAY5
 	dw day5_solve_b
-	db '6', 'a', BANK_DAY6
+	IFNDEF QUICK_RUN
+	db '6', 'a', BANK_DAY5
 	dw day_unsolved
-	db '6', 'b', BANK_DAY6
+	db '6', 'b', BANK_DAY5
 	dw day_unsolved
-	db '7', 'a', BANK_DAY6
+	db '7', 'a', BANK_DAY5
 	dw day_unsolved
-	db '7', 'b', BANK_DAY6
+	db '7', 'b', BANK_DAY5
 	dw day_unsolved
-	db '8', 'a', BANK_DAY6
+	db '8', 'a', BANK_DAY5
 	dw day_unsolved
-	db '8', 'b', BANK_DAY6
+	db '8', 'b', BANK_DAY5
 	dw day_unsolved
-	db '9', 'a', BANK_DAY6
+	db '9', 'a', BANK_DAY5
 	dw day9_solve_a
-	db '9', 'b', BANK_DAY6
+	db '9', 'b', BANK_DAY5
 	dw day9_solve_b
+	ENDIF
 day_table_end:
 
 day_unsolved:
