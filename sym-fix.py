@@ -8,7 +8,7 @@ def expand_symbol(v, syms):
 	if v[0:2] == '0x':
 		return int(v, 16)
 	elif v[0] >= '0' and v[0] <= '9':
-		return int(v)
+		return eval(v)
 	tokens = v.split('+')
 	if 1 == len(tokens):
 		return expand_symbol(syms[tokens[0]], syms)
@@ -27,7 +27,7 @@ def write_syms():
 		if m is None:
 			continue
 		for x in m:
-			syms[x[0]] = x[1]
+			syms[x[0].strip()] = x[1].strip()
 	print('; ram')
 	for k, v in syms.items():
 		syms[k] = expand_symbol(syms[k], syms)

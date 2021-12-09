@@ -6,8 +6,11 @@
 	.inesmap 1
 	.inesmir 0
 
+; QUICK_RUN .equ 1
+
 BANK_DAY1   .equ $0
 BANK_MUSIC  .equ $1
+BANK_DAY6   .equ $2
 
 CHR_AOC   .equ $0
 CHR_INTRO .equ $2
@@ -34,9 +37,12 @@ TaskPtr .equ $601
 ; ...
 TaskWait .equ $604
 
+Day9_SaveShit .equ 610 ; 611, 612, 614
+
 PrintPPU .equ $680
 PrintQueue .equ $682
 PrintData .equ $683
+PrintBColor .equ $6EF
 PrintColor .equ $6F0
 PrintSaveX .equ $6F1
 PrintSaveY .equ $6F2
@@ -65,12 +71,16 @@ MAX_MESSAGE_LEN	.equ 32
 	; ### BANK 1 ###
 	.bank BANK_DAY1
 	.org $8000
+	db "Bank Day 1-5",0
 	include "day1.asm"
 	include "day1_input.asm"
 	include "day2.asm"
 	include "day2_input.asm"
 	include "day3.asm"
 	include "day3_input.asm"
+	include "day4.asm"
+	include "day4_input.asm"
+	; include "day5.asm"
 
 	.bank BANK_MUSIC
 	.org $8000
@@ -80,10 +90,11 @@ MAX_MESSAGE_LEN	.equ 32
 	music_play: .equ $A675
 	incbin "musicbank-8000.bin"
 
-	.bank 2
+	.bank BANK_DAY6
 	.org $8000
-	db "Bank #2 placeholder"
-
+	db "Bank Day 6-9"
+	include "day9.asm"
+	include "day9_input.asm"
 	;
 	; ### BANK 1 ###
 	;
@@ -180,6 +191,13 @@ fflush:
 		inx
 		cpx #NUM_X_TILES
 		bne .more
+		lda #0
+		ldx #0
+.clear_next:
+		sta $2007
+		inx
+		cpx #NUM_X_TILES
+		bne .clear_next
 		clc
 		lda PrintPPU
 		adc #NUM_X_TILES
@@ -369,6 +387,7 @@ _putchar:
 		adc #FONT_MAP_SIZE
 		jmp .solved
 .is_border:
+		ldx PrintBColor
 		dex
 		bmi .solved
 		clc
@@ -417,6 +436,9 @@ begin_task:
 		dex
 		bne .more_reset
 		sta PrintColor
+		lda PrintBColor
+		eor #1
+		sta PrintBColor
 		macro_putstr banner_top
 		jsr wait_flush
 		macro_putstr banner_pre
@@ -600,11 +622,12 @@ reset_vector:
 		jsr set_bank_a
 		lda #0
 		ldx #0
-		;jsr music_init
+	IFNDEF QUICK_RUN
+		jsr music_init
 		lda #$40
 		sta $4017
-
-		; jsr run_intro
+		jsr run_intro
+	ENDIF
 		;
 		; Clear NT & Attr
 		;
@@ -668,13 +691,15 @@ reset_vector:
 		lda #0
 		sta TaskIter
 .run_task:
-		lda TaskIter
-		asl a
-		asl a
 		tax
-		lda day_table+2, x
-		sta TaskPtr
+		clc
+		adc #5
+		sta TaskIter
+		lda day_table+2,x
+		jsr set_bank_a
 		lda day_table+3, x
+		sta TaskPtr
+		lda day_table+4, x
 		sta TaskPtr+1 ; Func ptr
 		lda day_table+1, x
 		tay
@@ -688,10 +713,8 @@ reset_vector:
 		jmp [TaskPtr]
 .return_to:
 		jsr end_task
-		ldx TaskIter
-		inx
-		stx TaskIter
-		cpx #((day_table_end - day_table)/4)
+		lda TaskIter
+		cmp #(day_table_end - day_table)
 		bne .run_task
 all_solved
 		jmp all_solved
@@ -721,19 +744,53 @@ _memcpy:
 		rts
 
 day_table:
-	db '1', 'a'
+	IFNDEF QUICK_RUN
+	db '1', 'a', BANK_DAY1
 	dw day1_solve_a
-	db '1', 'b'
+	db '1', 'b', BANK_DAY1
 	dw day1_solve_b
-	db '2', 'a'
+	db '2', 'a', BANK_DAY1
 	dw day2_solve_a
-	db '2', 'b'
+	db '2', 'b', BANK_DAY1
 	dw day2_solve_b
-	db '3', 'a'
+	db '3', 'a', BANK_DAY1
 	dw day3_solve_a
-	db '3', 'b'
+	db '3', 'b', BANK_DAY1
 	dw day3_solve_b
-day_table_end
+	db '4', 'a', BANK_DAY1
+	dw day4_solve_a
+	db '4', 'b', BANK_DAY1
+	dw day4_solve_b
+	ENDIF
+	db '5', 'a', BANK_DAY1
+	dw day5_solve_a
+	db '5', 'b', BANK_DAY1
+	dw day5_solve_b
+	db '6', 'a', BANK_DAY6
+	dw day_unsolved
+	db '6', 'b', BANK_DAY6
+	dw day_unsolved
+	db '7', 'a', BANK_DAY6
+	dw day_unsolved
+	db '7', 'b', BANK_DAY6
+	dw day_unsolved
+	db '8', 'a', BANK_DAY6
+	dw day_unsolved
+	db '8', 'b', BANK_DAY6
+	dw day_unsolved
+	db '9', 'a', BANK_DAY6
+	dw day9_solve_a
+	db '9', 'b', BANK_DAY6
+	dw day9_solve_b
+day_table_end:
+
+day_unsolved:
+		lda #$ff
+		sta Result
+		sta Result+1
+		sta Result+2
+		sta Result+3
+		rts
 
 mathout_to_res:
 		tmm32 Result, MathOut

@@ -49,6 +49,13 @@ tmm32 .macro
 	sta \1+3
 	.endm
 
+tmm16 .macro
+	lda \2
+	sta \1
+	lda \2+1
+	sta \1+1
+	.endm
+
 macro_memcpy .macro
 	lda #LOW(\1)
 	sta Src
