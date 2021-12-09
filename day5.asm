@@ -23,37 +23,22 @@ D5_WindowPtr .equ WORK+$34
 D5_WINDOW_SIZE .equ 50
 D5_BOARD_SIZE .equ 1000
 
-d5_peek_next:
-		ldy #0
-		lda [INPUT], Y
-		rts
-
-d5_read_next:
-		jsr d5_peek_next
-d5_skip_next:
-		inc INPUT
-		bne .no_high
-		inc INPUT+1
-.no_high:
-		rts
-
-
 d5_read_coords:
-		jsr d5_read_next
+		jsr read_next
 		sta D5_x0
-		jsr d5_read_next
+		jsr read_next
 		sta D5_x0+1
-		jsr d5_read_next
+		jsr read_next
 		sta D5_y0
-		jsr d5_read_next
+		jsr read_next
 		sta D5_y0+1
-		jsr d5_read_next
+		jsr read_next
 		sta D5_x1
-		jsr d5_read_next
+		jsr read_next
 		sta D5_x1+1
-		jsr d5_read_next
+		jsr read_next
 		sta D5_y1
-		jsr d5_read_next
+		jsr read_next
 		sta D5_y1+1
 		rts
 

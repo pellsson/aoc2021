@@ -1,20 +1,5 @@
-
 INPUT .equ WORK
 SAVED_SEQUENCE .equ WORK+$4
-
-peek_next:
-		ldy #0
-		lda [INPUT], Y
-		rts
-
-read_next:
-		jsr peek_next
-skip_next:
-		inc INPUT
-		bne .no_high
-		inc INPUT+1
-.no_high:
-		rts
 
 rewind_word:
 		lda #2

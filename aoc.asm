@@ -93,6 +93,8 @@ MAX_MESSAGE_LEN	.equ 32
 	db "Bank Day 5-9"
 	include "day5.asm"
 	include "day5_input.asm"
+	include "day6.asm"
+	include "day6_input.asm"
 	include "day9.asm"
 	include "day9_input.asm"
 	;
@@ -487,8 +489,12 @@ end_task:
 		jsr wait_flush
 		jsr wait_flush
 		dec PrintColor
-		macro_putstr_inline "       NES says: "
+		macro_putstr_inline "     NES says: "
 		inc PrintColor
+		lda Result+5
+		jsr _puthex
+		lda Result+4
+		jsr _puthex
 		lda Result+3
 		jsr _puthex
 		lda Result+2
@@ -761,16 +767,16 @@ day_table:
 	dw day4_solve_a
 	db '4', 'b', BANK_DAY1
 	dw day4_solve_b
-	ENDIF
 	db '5', 'a', BANK_DAY5
 	dw day5_solve_a
 	db '5', 'b', BANK_DAY5
 	dw day5_solve_b
-	IFNDEF QUICK_RUN
+	ENDIF
 	db '6', 'a', BANK_DAY5
-	dw day_unsolved
+	dw day6_solve_a
 	db '6', 'b', BANK_DAY5
-	dw day_unsolved
+	dw day6_solve_b
+	IFNDEF QUICK_RUN
 	db '7', 'a', BANK_DAY5
 	dw day_unsolved
 	db '7', 'b', BANK_DAY5
@@ -796,6 +802,20 @@ day_unsolved:
 
 mathout_to_res:
 		tmm32 Result, MathOut
+		rts
+
+peek_next:
+		ldy #0
+		lda [INPUT], Y
+		rts
+
+read_next:
+		jsr peek_next
+skip_next:
+		inc INPUT
+		bne .no_high
+		inc INPUT+1
+.no_high:
 		rts
 
 	include "math.asm"
