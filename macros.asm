@@ -48,6 +48,31 @@ macro_sub16_imm8 .macro
 	sta \1+1
 	.endm
 
+macro_sub16_imm16 .macro
+	sec
+	lda \1
+	sbc #LOW(\2)
+	sta \1
+	lda \1+1
+	sbc #HIGH(\2)
+	sta \1+1
+	.endm
+
+macro_abs16 .macro
+	lda \1+1
+	bpl .done\@
+	lda \1
+	eor #$FF
+	sta \1
+	lda \1+1
+	eor #$ff
+	sta \1+1
+	inc \1
+	bne .done\@
+	inc \1+1
+.done\@:
+	.endm
+
 macro_sub16_out .macro
 	sec
 	lda \2
@@ -74,6 +99,20 @@ macro_add16_out .macro
 
 macro_add16 .macro
 	macro_add16_out \1, \1, \2
+	.endm
+
+macro_add32_out .macro
+	macro_add16_out \1, \2, \3
+	lda \2+2
+	adc \3+2
+	sta \1+2
+	lda \2+3
+	adc \3+3
+	sta \1+3
+	.endm
+
+macro_add32 .macro
+	macro_add32_out \1, \1, \2
 	.endm
 
 macro_mul16 .macro
@@ -186,7 +225,7 @@ macro_memset_pb .macro
 	lda #HIGH(\1)
 	sta Dst+1
 	lda #\2
-	ldx #((\3)/$100)
+	ldx #HIGH((\3+$FF) & $FF00)
 	ldy #0
 .next\@:
 	sta [Dst], Y
@@ -195,7 +234,7 @@ macro_memset_pb .macro
 	macro_add16_imm16 Dst, $100
 	lda #\2
 	dex
-	bpl .next\@
+	bne .next\@
 	.endm
 
 macro_is_less_u16 .macro

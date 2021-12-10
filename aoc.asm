@@ -1,16 +1,21 @@
 	;
 	; INES header
 	;
-	.inesprg 4
+	.inesprg 8
 	.ineschr 2
 	.inesmap 1
 	.inesmir 0
 
 QUICK_RUN .equ 1
 
-BANK_DAY1   .equ $0
+BANK_DAYS_1 .equ $0
 BANK_MUSIC  .equ $1
-BANK_DAY5   .equ $2
+BANK_DAYS_2 .equ $2
+BANK_DAYS_3 .equ $3
+BANK_DAYS_4 .equ $4
+BANK_DAYS_5 .equ $5
+BANK_DAYS_6 .equ $6
+BANK_FIXED  .equ $7
 
 CHR_AOC   .equ $0
 CHR_INTRO .equ $2
@@ -68,9 +73,9 @@ MAX_MESSAGE_LEN	.equ 32
 	include "macros.asm"
 
 	; ### BANK 1 ###
-	.bank BANK_DAY1
+	.bank BANK_DAYS_1
 	.org $8000
-	db "Bank Day 1-4",0
+	db "Bank Days 1",0
 	include "day1.asm"
 	include "day1_input.asm"
 	include "day2.asm"
@@ -79,6 +84,8 @@ MAX_MESSAGE_LEN	.equ 32
 	include "day3_input.asm"
 	include "day4.asm"
 	include "day4_input.asm"
+	include "day6.asm"
+	include "day6_input.asm"
 
 	.bank BANK_MUSIC
 	.org $8000
@@ -88,19 +95,34 @@ MAX_MESSAGE_LEN	.equ 32
 	music_play: .equ $A675
 	incbin "musicbank-8000.bin"
 
-	.bank BANK_DAY5
+	.bank BANK_DAYS_2
 	.org $8000
-	db "Bank Day 5-9"
+	db "Bank Days 2"
 	include "day5.asm"
 	include "day5_input.asm"
-	include "day6.asm"
-	include "day6_input.asm"
+	; day 6 moved ot bank1
+	include "day7.asm"
+	include "day7_input.asm"
+
+	.bank BANK_DAYS_3
+	.org $8000
+	db "Bank Days 3"
 	include "day9.asm"
 	include "day9_input.asm"
-	;
-	; ### BANK 1 ###
-	;
-	.bank 3
+
+	.bank BANK_DAYS_4
+	.org $8000
+	db "Bank Days 4"
+
+	.bank BANK_DAYS_5
+	.org $8000
+	db "Bank Days 5"
+
+	.bank BANK_DAYS_6
+	.org $8000
+	db "Bank Days 6"
+
+	.bank BANK_FIXED
 	.org $C000
 
 nmi_vector:
@@ -685,7 +707,7 @@ reset_vector:
 		lda #29
 		sta PrintScrollDisabled
 
-		lda #BANK_DAY1
+		lda #BANK_DAYS_1
 		jsr set_bank_a
 
 		ldx #5
@@ -751,43 +773,43 @@ _memcpy:
 
 day_table:
 	IFNDEF QUICK_RUN
-	db '1', 'a', BANK_DAY1
+	db '1', 'a', BANK_DAYS_1
 	dw day1_solve_a
-	db '1', 'b', BANK_DAY1
+	db '1', 'b', BANK_DAYS_1
 	dw day1_solve_b
-	db '2', 'a', BANK_DAY1
+	db '2', 'a', BANK_DAYS_1
 	dw day2_solve_a
-	db '2', 'b', BANK_DAY1
+	db '2', 'b', BANK_DAYS_1
 	dw day2_solve_b
-	db '3', 'a', BANK_DAY1
+	db '3', 'a', BANK_DAYS_1
 	dw day3_solve_a
-	db '3', 'b', BANK_DAY1
+	db '3', 'b', BANK_DAYS_1
 	dw day3_solve_b
-	db '4', 'a', BANK_DAY1
+	db '4', 'a', BANK_DAYS_1
 	dw day4_solve_a
-	db '4', 'b', BANK_DAY1
+	db '4', 'b', BANK_DAYS_1
 	dw day4_solve_b
-	db '5', 'a', BANK_DAY5
+	db '5', 'a', BANK_DAYS_2
 	dw day5_solve_a
-	db '5', 'b', BANK_DAY5
+	db '5', 'b', BANK_DAYS_2
 	dw day5_solve_b
-	ENDIF
-	db '6', 'a', BANK_DAY5
+	db '6', 'a', BANK_DAYS_1
 	dw day6_solve_a
-	db '6', 'b', BANK_DAY5
+	db '6', 'b', BANK_DAYS_1
 	dw day6_solve_b
+	ENDIF
+	db '7', 'a', BANK_DAYS_2
+	dw day7_solve_a
+	db '7', 'b', BANK_DAYS_2
+	dw day7_solve_b
 	IFNDEF QUICK_RUN
-	db '7', 'a', BANK_DAY5
+	db '8', 'a', BANK_DAYS_2
 	dw day_unsolved
-	db '7', 'b', BANK_DAY5
+	db '8', 'b', BANK_DAYS_2
 	dw day_unsolved
-	db '8', 'a', BANK_DAY5
-	dw day_unsolved
-	db '8', 'b', BANK_DAY5
-	dw day_unsolved
-	db '9', 'a', BANK_DAY5
+	db '9', 'a', BANK_DAYS_3
 	dw day9_solve_a
-	db '9', 'b', BANK_DAY5
+	db '9', 'b', BANK_DAYS_3
 	dw day9_solve_b
 	ENDIF
 day_table_end:
