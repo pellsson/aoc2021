@@ -1,7 +1,7 @@
-NESASM3.exe
+nesasm-fix
 aoc.nes
 aoc.fns
-aoc-full.*
+*.deb
 fceux/
 nesasm/
 nesasmsrc/vs/.vs

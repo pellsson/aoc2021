@@ -3,12 +3,15 @@ Dumbest fucking idea I've had to date. I am not enjoying this even remotely. At 
 
 ![AoC 2021](intro.png)
 
-Should (and does) run an unmodified NES, using MMC1 with 0x2000 (+0x800) bytes of RAM. Some of the challenges take waaay over an hour to compute the answer for... Doesn't work with PowerPAK (dont know why and at this point, I dont care). Does work natively otherwise.
+Should (and does) run an on an unmodified NES. Uses MMC1 with 0x2000 (+0x800) bytes of RAM. Some of the challenges take **way** over an hour to compute the answer for. Does **not** work with PowerPAK (dont know why and at this point, I dont care). Does work on physical hardware.
 
 If you hate yourself and want to watch it for the serveral hours it takes to complete, just:
+
 1) `(cd nesasmsrc && gcc *.c -o ../nesasm-fix)` to build the modified (required) nesasm version.
 2) `./build.sh`
 3) Run it and wait a short eternity for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL. However, the mustic does not loop so the vast majority of execution is spent in silent anguish.
+
+**EDIT:** I just added the ROM image...
 
 ## Write up
 
