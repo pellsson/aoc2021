@@ -10,24 +10,26 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 2) `./build.sh`
 3) Run it and wait several hours for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL.
 
-## Day 1 a & b
+## Write up
+
+### Day 1
 Wow, fun. Simple. This will be a breeze.
 
-## Day 2
+### Day 2
 Still fun. Not much to add.
 
-## Day 3
+### Day 3
 Alright. This is a challenge. Good format. Having fun. Easy enough.
 
-## Day 4
+### Day 4
 Mmm ok. Fun. Easy.
 
-## Day 5 & 6
+### Day 5 & 6
 FUCK.
 
-## Day 7
+### Day 7
 Ah ok. Maybe 5 & 6 were just poorly adapted for the NES. This is ezpzlemonsqueeze.
 
-## Day 8+
+### Day 8+
 FUUUUUUUUUUUUUUUUUUUK
 
