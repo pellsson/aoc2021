@@ -9,7 +9,7 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 
 1) `(cd nesasmsrc && gcc *.c -o ../nesasm-fix)` to build the modified (required) nesasm version.
 2) `./build.sh`
-3) Run it and wait a short eternity for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL. However, the mustic does not loop so the vast majority of execution is spent in silent anguish.
+3) Run it and wait a short eternity for the hot garbage to finish. Tune is pretty cool though, ripped from [here](https://www.bilibili.com/video/BV1nh411f77p/). However, the mustic does not loop so the vast majority of execution is spent in silent anguish.
 
 **EDIT:** I just added the ROM image...
 
