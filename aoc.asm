@@ -46,6 +46,10 @@ Day9_SaveShit .equ 610 ; 611, 612, 614
 PrintPPU .equ $680
 PrintQueue .equ $682
 PrintData .equ $683
+FrameStart .equ $6E0 ; 1, 2
+; FrameEndLo .equ $6FB
+; FrameEndHi .equ $6FC
+FrameCounter .equ $6E3 ; 4, 5
 PrintBColor .equ $6EF
 PrintColor .equ $6F0
 PrintSaveX .equ $6F1
@@ -56,12 +60,7 @@ PrintScrollAt .equ $6F5
 Mirror2000 .equ $6F6
 IntrX .equ $6F7
 IntrY .equ $6F8
-FrameStartLo .equ $6F9
-FrameStartHi .equ $6FA
-; FrameEndLo .equ $6FB
-; FrameEndHi .equ $6FC
-FrameCounterLo .equ $6FD
-FrameCounterHi .equ $6FE
+InNmi .equ $6FE
 CurrentBank .equ $6FF
 
 SCROLL_SPEED    .equ 2
@@ -131,9 +130,17 @@ nmi_vector:
 	pha
 		stx IntrX
 		sty IntrY
-		inc FrameCounterLo
+		lda InNmi
+		beq .not_in_nmi
+		jmp .already_in_nmi
+.not_in_nmi:
+		lda #1
+		sta InNmi
+		inc FrameCounter
 		bne .no_hi
-		inc FrameCounterHi
+		inc FrameCounter+1
+		bne .no_hi
+		inc FrameCounter+2
 .no_hi:
 		dec TaskWait
 		; sprites
@@ -166,9 +173,11 @@ nmi_vector:
 		;
 		; Return
 		;
+.already_in_nmi:
 		ldy IntrY
 		ldx IntrX
 	pla
+		dec InNmi
 		rti
 
 flip_nt:
@@ -289,6 +298,7 @@ ppu_on:
 
 ppu_off:
 		sei
+		lda #0
 		sta Mirror2000
 		sta $2000
 .wait_vbl0:
@@ -344,10 +354,10 @@ run_intro:
 		bne .more_3
 		jsr ppu_on
 .wait_intro_hi:
-		lda FrameCounterHi
+		lda FrameCounter+1
 		beq .wait_intro_hi
 .wait_intro_lo:
-		lda FrameCounterLo
+		lda FrameCounter
 		cmp #$80
 		bne .wait_intro_lo
 		jmp ppu_off
@@ -485,30 +495,38 @@ begin_task:
 		macro_putstr banner_bottom
 		jsr wait_flush
 		jsr wait_flush
-		lda #0
-		sta PrintColor
-		macro_putstr_inline "    Starting on frame #"
-		lda #2
-		sta PrintColor
-		lda FrameCounterHi
-		jsr _puthex
-		lda FrameCounterLo
-		jsr _puthex
+		macro_putstr_inline "     Starting task..."
 		jsr wait_flush
-		lda FrameCounterHi
-		sta FrameStartHi
-		lda FrameCounterLo
-		sta FrameStartLo
+		jsr wait_flush
+		lda FrameCounter
+		sta FrameStart
+		lda FrameCounter+1
+		sta FrameStart+1
+		lda FrameCounter+2
+		sta FrameStart+2
 		rts
 
 end_task:
 		lda #0
 		sta PrintColor
-		macro_putstr_inline "    Finished on frame #"
-		inc PrintColor
-		lda FrameCounterHi
+		macro_putstr_inline "     Started on frame: "
+		lda #2
+		sta PrintColor
+		lda FrameStart+2
 		jsr _puthex
-		lda FrameCounterLo
+		lda FrameStart+1
+		jsr _puthex
+		lda FrameStart
+		jsr _puthex
+		jsr wait_flush
+		sta PrintColor
+		macro_putstr_inline "     Solved on frame : "
+		inc PrintColor
+		lda FrameCounter+2
+		jsr _puthex
+		lda FrameCounter+1
+		jsr _puthex
+		lda FrameCounter
 		jsr _puthex
 		jsr wait_flush
 		jsr wait_flush
@@ -658,6 +676,7 @@ reset_vector:
 		sta $4017
 		jsr run_intro
 	ENDIF
+
 		;
 		; Clear NT & Attr
 		;
