@@ -8,4 +8,5 @@ nesasmsrc/vs/.vs
 nesasmsrc/vs/nesasm-vs.vcxproj.user
 nesasmsrc/vs/x64
 musicbank.bin*
+hacks
 *.nsf
