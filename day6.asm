@@ -23,8 +23,6 @@ d6_lookup_256:
 		db $70, $D5, $8C, $D9, $00, $00, $00, $00
 		db $DA, $B5, $D1, $C8, $00, $00, $00, $00
 
-
-
 day6_solve:
 		lda #LOW(day6_input)
 		sta INPUT

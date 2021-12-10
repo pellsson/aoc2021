@@ -1,4 +1,4 @@
-# Adevent of Code 2021 - On a NES
+# Adevent of Code 2021 - On an NES
 Dumbest fucking idea I've had to date. I am not enjoying this even remotely. At this point it is just a compulsive nightmarish obsession to complete the stupid challenge.
 
 ![AoC 2021](intro.png)
@@ -8,12 +8,12 @@ Should (and does) run an unmodified NES, using MMC1 with 0x2000 (+0x800) bytes o
 If you hate yourself and want to watch it for the serveral hours it takes to complete, just:
 1) `(cd nesasmsrc && gcc *.c -o ../nesasm-fix)` to build the modified (required) nesasm version.
 2) `./build.sh`
-3) Run it and wait several hours for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL. The mustic does not loop, so the vast majority of execution is spent in silent anguish.
+3) Run it and wait a short eternity for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL. However, the mustic does not loop so the vast majority of execution is spent in silent anguish.
 
 ## Write up
 
 ### Day 1
-Wow, fun. Simple. This will be a breeze. I'll add music and a title. Holy shit so much fun.
+Wow, fun. Simple. This will be a breeze. I'll add music and a title screen. Holy shit so much fun.
 
 ### Day 2
 Still fun. Not much to add.
@@ -24,12 +24,12 @@ Alright. This is a challenge. Good format. Having fun. Easy enough.
 ### Day 4
 Mmm ok. Fun. Easy.
 
-### Day 5 & 6
+### Day 5
 FUCK.
 
-### Day 7
-Ah ok. Maybe 5 & 6 were just poorly adapted for the NES. This is ezpzlemonsqueeze.
+### Day 6
+Ah ok. Maybe day 5 was just poorly adapted for the NES. This is ezpzlemonsqueeze.
 
-### Day 8+
-FUUUUUUUUUUUUUUUUUUUK
+### Day 7+
+FUUUUUUUUUUUUUUUUUUUK.
 

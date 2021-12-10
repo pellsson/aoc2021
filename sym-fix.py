@@ -22,7 +22,7 @@ def prg_syms():
 
 def write_syms():
 	syms = {}
-	for it in ['aoc.asm', 'day7.asm']: # glob.glob('./*.asm'):
+	for it in ['aoc.asm', 'day8.asm']: # glob.glob('./*.asm'):
 		m = re.findall(r'([_a-zA-Z0-9]+)\s*\.equ\s*([^;\n]+)', open(it, 'r').read())
 		if m is None:
 			continue
