@@ -8,12 +8,12 @@ Should (and does) run an unmodified NES, using MMC1 with 0x2000 (+0x800) bytes o
 If you hate yourself and want to watch it for the serveral hours it takes to complete, just:
 1) `(cd nesasmsrc && gcc *.c -o ../nesasm-fix)` to build the modified (required) nesasm version.
 2) `./build.sh`
-3) Run it and wait several hours for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL.
+3) Run it and wait several hours for the hot garbage to finish. Tune is pretty cool though, ripped from: $INSERT_URL. The mustic does not loop, so the vast majority of execution is spent in silent anguish.
 
 ## Write up
 
 ### Day 1
-Wow, fun. Simple. This will be a breeze.
+Wow, fun. Simple. This will be a breeze. I'll add music and a title. Holy shit so much fun.
 
 ### Day 2
 Still fun. Not much to add.
