@@ -12,7 +12,7 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 2) `./build.sh`
 3) Run it and wait a brief eternity for it to finish. The awesome christmas tune was ripped from [here](https://www.bilibili.com/video/BV1nh411f77p/). Music does not loop so the vast majority of execution is spent in silent anguish.
 
-**EDIT:** I just added the ROM image... Just load in in your favorite emulator or write to cart.
+**EDIT:** I just added the ROM image... Just load it in your favorite emulator or write to cart.
 
 **Days completed:** 1,2,3,4,5,6,7,8,9,10,11.
 
