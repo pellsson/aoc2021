@@ -114,6 +114,8 @@ MAX_MESSAGE_LEN	.equ 32
 	.bank BANK_DAYS_4
 	.org $8000
 	db "Bank Days 4"
+	include "day10.asm"
+	include "day10_input.asm"
 
 	.bank BANK_DAYS_5
 	.org $8000
@@ -822,17 +824,19 @@ day_table:
 	dw day7_solve_a
 	db '7', 'b', BANK_DAYS_2
 	dw day7_solve_b
-	ENDIF
 	db '8', 'a', BANK_DAYS_3
 	dw day8_solve_a
 	db '8', 'b', BANK_DAYS_3
 	dw day8_solve_b
-	IFNDEF QUICK_RUN
 	db '9', 'a', BANK_DAYS_3
 	dw day9_solve_a
 	db '9', 'b', BANK_DAYS_3
 	dw day9_solve_b
 	ENDIF
+	db 'A', 'a', BANK_DAYS_4
+	dw day10_solve_a
+	db 'A', 'b', BANK_DAYS_4
+	dw day10_solve_b
 day_table_end:
 
 day_unsolved:

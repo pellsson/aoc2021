@@ -185,22 +185,25 @@ macro_min_u16 .macro
 .end\@:
 	.endm
 
-tmm32 .macro
+tmm16 .macro
 	lda \2
 	sta \1
 	lda \2+1
 	sta \1+1
+	.endm
+
+tmm32 .macro
+	tmm16 \1, \2
 	lda \2+2
 	sta \1+2
 	lda \2+3
 	sta \1+3
 	.endm
 
-tmm16 .macro
-	lda \2
-	sta \1
-	lda \2+1
-	sta \1+1
+tmm40 .macro
+	tmm32 \1, \2
+	lda \2+4
+	sta \1+4
 	.endm
 
 macro_memcpy .macro
@@ -247,4 +250,25 @@ macro_is_less_u16 .macro
 	bcc \3 ; Lower!
 	; Higher or equal
 .higher\@:
+	.endm
+
+macro_is_less_u32 .macro
+	lda \1+3
+	cmp \2+3
+	bcc \3 ; Lower!
+	bne .higher_x\@
+	lda \1+2
+	cmp \2+2
+	bcc \3 ; Lower!
+	macro_is_less_u16 \1, \2, \3
+.higher_x\@
+	.endm
+
+macro_is_less_u40 .macro
+	lda \1+4
+	cmp \2+4
+	bcc \3
+	bne .higher_xx\@
+	macro_is_less_u32 \1, \2, \3
+.higher_xx\@:
 	.endm
