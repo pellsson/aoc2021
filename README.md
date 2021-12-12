@@ -1,38 +1,17 @@
-# Adevent of Code 2021 - On an NES
-Dumbest fucking idea I've had to date. I am not enjoying this even remotely. At this point it is just a compulsive nightmarish obsession to complete the stupid challenge.
+# Advent of Code 2021 - On an NES
 
 ![AoC 2021](intro.png)
 
-Should (and does) run an on an unmodified NES. Uses MMC1 with 0x2000 (+0x800) bytes of RAM. Some of the challenges take **way** over an hour to compute the answer for. Does **not** work with PowerPAK (dont know why and at this point, I dont care). Does work on physical hardware.
+Quest to complete Advent of Code 2021 on a unmodified 8-bit NES.
+
+Should (and does) run on physical hardware. Uses MMC1 with 0x2000 (+0x800) bytes of RAM. Some of the challenges take **way** over an hour to compute the answer for. Does **not** work with PowerPAK (dont know why and at this point, I dont care).
 
 If you hate yourself and want to watch it for the serveral hours it takes to complete, just:
 
 1) `(cd nesasmsrc && gcc *.c -o ../nesasm-fix)` to build the modified (required) nesasm version.
 2) `./build.sh`
-3) Run it and wait a short eternity for the hot garbage to finish. Tune is pretty cool, ripped from [here](https://www.bilibili.com/video/BV1nh411f77p/). However, the music does not loop so the vast majority of execution is spent in silent anguish.
+3) Run it and wait the brief eternity for it to finish. Tune awesome christmas tune was ripped from [here](https://www.bilibili.com/video/BV1nh411f77p/). The music does not loop so the vast majority of execution is spent in silent anguish.
 
-**EDIT:** I just added the ROM image...
+**EDIT:** I just added the ROM image... Just load in in your favorite emulator or write to cart.
 
-## Write up
-
-### Day 1
-Wow, fun. Simple. This will be a breeze. I'll add music and a title screen. Holy shit so much fun.
-
-### Day 2
-Still fun. Not much to add.
-
-### Day 3
-Alright. This is a challenge. Good format. Having fun. Easy enough.
-
-### Day 4
-Mmm ok. Fun. Easy.
-
-### Day 5
-FUCK.
-
-### Day 6
-Ah ok. Maybe day 5 was just poorly adapted for the NES. This is ezpzlemonsqueeze.
-
-### Day 7+
-FUUUUUUUUUUUUUUUUUUUK.
-
+**Days completed:** 1,2,3,4,5,6,7,8,9,10.

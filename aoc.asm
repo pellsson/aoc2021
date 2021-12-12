@@ -6,7 +6,7 @@
 	.inesmap 1
 	.inesmir 0
 
-; QUICK_RUN .equ 1
+QUICK_RUN .equ 1
 
 BANK_DAYS_1 .equ $0
 BANK_MUSIC  .equ $1
@@ -116,6 +116,8 @@ MAX_MESSAGE_LEN	.equ 32
 	db "Bank Days 4"
 	include "day10.asm"
 	include "day10_input.asm"
+	include "day11.asm"
+	include "day11_input.asm"
 
 	.bank BANK_DAYS_5
 	.org $8000
@@ -832,11 +834,15 @@ day_table:
 	dw day9_solve_a
 	db '9', 'b', BANK_DAYS_3
 	dw day9_solve_b
-	ENDIF
 	db 'A', 'a', BANK_DAYS_4
 	dw day10_solve_a
 	db 'A', 'b', BANK_DAYS_4
 	dw day10_solve_b
+	ENDIF
+	db 'B', 'a', BANK_DAYS_4
+	dw day11_solve_a
+	db 'B', 'b', BANK_DAYS_4
+	dw day11_solve_b
 day_table_end:
 
 day_unsolved:
