@@ -124,6 +124,8 @@ MAX_MESSAGE_LEN	.equ 32
 	.bank BANK_DAYS_5
 	.org $8000
 	db "Bank Days 5"
+	include "day13.asm"
+	include "day13_input.asm"
 
 	.bank BANK_DAYS_6
 	.org $8000
@@ -849,6 +851,10 @@ day_table:
 	; dw day12_solve_a
 	; db 'C', 'b', BANK_DAYS_4
 	; dw day12_solve_b
+	db 'D', 'a', BANK_DAYS_5
+	dw day13_solve_a
+	db 'D', 'b', BANK_DAYS_5
+	dw day13_solve_b
 day_table_end:
 
 day_unsolved:
