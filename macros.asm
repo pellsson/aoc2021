@@ -115,6 +115,17 @@ macro_add32 .macro
 	macro_add32_out \1, \1, \2
 	.endm
 
+macro_inc32 .macro
+	inc \1
+	bne .done
+	inc \1+1
+	bne .done
+	inc \1+2
+	bne .done
+	inc \1+3
+.done:	
+	.endm
+
 macro_mul16 .macro
 	lda \1
 	sta MathLhs
