@@ -16,5 +16,8 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 
 **Days completed:** 1,2,3,4,5,6,7,8,9,10,11,13.
 
-![AoC 2021](running.png)
+![AoC 2021](day13-a.png)
+
+![AoC 2021](day13-b.png)
+
 
