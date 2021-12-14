@@ -41,11 +41,15 @@ TaskPtr .equ $601
 ; ...
 TaskWait .equ $604
 
+Input .equ $608
+LastInput .equ $609
+
 Day9_SaveShit .equ 610 ; 611, 612, 614
 
 PrintPPU .equ $680
 PrintQueue .equ $682
 PrintData .equ $683
+
 FrameStart .equ $6E0 ; 1, 2
 ; FrameEndLo .equ $6FB
 ; FrameEndHi .equ $6FC
@@ -126,6 +130,8 @@ MAX_MESSAGE_LEN	.equ 32
 	db "Bank Days 5"
 	include "day13.asm"
 	include "day13_input.asm"
+	include "day14.asm"
+	include "day14_input.asm"
 
 	.bank BANK_DAYS_6
 	.org $8000
@@ -514,7 +520,16 @@ begin_task:
 		sta FrameStart+2
 		rts
 
+end_task_skipped:
+		macro_putstr_inline "     Task skipped by input..."
+		jsr wait_flush		
+		jmp wait_flush
+
 end_task:
+		lda Input
+		beq .not_skipped
+		jmp end_task_skipped
+.not_skipped:		
 		lda #0
 		sta PrintColor
 		macro_putstr_inline "     Started on frame: "
@@ -763,6 +778,9 @@ reset_vector:
 		lda day_table, x 
 		tax
 		jsr begin_task
+		jsr read_input
+		lda Input
+		bne .return_to
 		lda #HIGH((.return_to-1))
 		pha
 		lda #LOW((.return_to-1))
@@ -775,6 +793,30 @@ reset_vector:
 		bne .run_task
 all_solved
 		jmp all_solved
+
+read_input:
+		lda Input
+		sta LastInput
+		lda #$01
+		sta $4016
+		lsr a
+		tax
+		sta $4016
+		ldy #$08
+		; TODO : Read both controllers?
+.readmore:
+		pha
+		lda $4016, x
+		sta $00
+		lsr a
+		ora $00
+		lsr a
+		pla
+		rol a
+		dey
+		bne .readmore
+		sta Input
+		rts
 
 _memcpy:
 		ldy #0
@@ -846,17 +888,20 @@ day_table:
 	dw day11_solve_a
 	db 'B', 'b', BANK_DAYS_4
 	dw day11_solve_b
-	ENDIF
 	db 'C', 'a', BANK_DAYS_4
 	dw day12_solve_a
 	db 'C', 'b', BANK_DAYS_4
 	dw day12_solve_b
-	IFNDEF QUICK_RUN
 	db 'D', 'a', BANK_DAYS_5
 	dw day13_solve_a
 	db 'D', 'b', BANK_DAYS_5
 	dw day13_solve_b
 	ENDIF
+	db 'E', 'a', BANK_DAYS_5
+	dw day14_solve_a
+	db 'E', 'b', BANK_DAYS_5
+	dw day14_solve_b
+
 day_table_end:
 
 day_unsolved:

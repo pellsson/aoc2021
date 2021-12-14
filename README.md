@@ -14,7 +14,7 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 
 **EDIT:** I just added the ROM image... Just load it in your favorite emulator or write to cart.
 
-**Days completed:** 1,2,3,4,5,6,7,8,9,10,11,12,13. All of them! :D
+**Days completed:** 1,2,3,4,5,6,7,8,9,10,11,12,13,14. All of them! :D
 
 ### Day 12
 
@@ -28,5 +28,4 @@ If you hate yourself and want to watch it for the serveral hours it takes to com
 ![AoC 2021 - Day 13.a](day13-a.png)
 
 ![AoC 2021 - Day 13.b](day13-b.png)
-
 

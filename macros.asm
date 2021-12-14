@@ -87,6 +87,40 @@ macro_sub16 .macro
 	macro_sub16_out \1, \1, \2
 	.endm
 
+macro_sub32_out .macro
+	macro_sub16_out \1, \2, \3
+	lda \2+2
+	sbc \3+2
+	sta \1+2
+	lda \2+3
+	sbc \3+3
+	sta \1+3
+	.endm
+
+macro_sub32 .macro
+	macro_sub32_out \1, \1, \2
+	.endm
+
+macro_sub64_out .macro
+	macro_sub32_out \1, \2, \3
+	lda \2+4
+	sbc \3+4
+	sta \1+4
+	lda \2+5
+	sbc \3+5
+	sta \1+5
+	lda \2+6
+	sbc \3+6
+	sta \1+6
+	lda \2+7
+	sbc \3+7
+	sta \1+7
+	.endm
+
+macro_sub64 .macro
+	macro_sub64_out \1, \1, \2
+	.endm
+
 macro_add16_out .macro
 	clc
 	lda \2
@@ -113,6 +147,26 @@ macro_add32_out .macro
 
 macro_add32 .macro
 	macro_add32_out \1, \1, \2
+	.endm
+
+macro_add64_out .macro
+	macro_add32_out \1, \2, \3
+	lda \2+4
+	adc \3+4
+	sta \1+4
+	lda \2+5
+	adc \3+5
+	sta \1+5
+	lda \2+6
+	adc \3+6
+	sta \1+6
+	lda \2+7
+	adc \3+7
+	sta \1+7
+	.endm
+
+macro_add64 .macro
+	macro_add64_out \1, \1, \2
 	.endm
 
 macro_inc32 .macro
@@ -196,6 +250,8 @@ macro_min_u16 .macro
 .end\@:
 	.endm
 
+
+
 tmm16 .macro
 	lda \2
 	sta \1
@@ -205,10 +261,12 @@ tmm16 .macro
 
 tmm32 .macro
 	tmm16 \1, \2
-	lda \2+2
-	sta \1+2
-	lda \2+3
-	sta \1+3
+	tmm16 \1+2, \2+2
+	.endm
+
+tmm64 .macro
+	tmm32 \1, \2
+	tmm32 \1+4, \2+4
 	.endm
 
 tmm40 .macro
